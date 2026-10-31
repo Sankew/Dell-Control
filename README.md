@@ -80,16 +80,16 @@ Only Custom Color is confirmed against the Dell's menu.
 Matching only works against a MacBook that isn't moving:
 
 - Turn off True Tone, Night Shift and "Automatically adjust brightness".
-- Use the fixed **Apple Display** preset rather than the default "Apple XDR Display (P3-1600 nits)". On an M4 it's most likely called **P3-600 nits**, going by Datacolor's notes for the M3/M4/M5 MacBook Pro; on M1/M2 Pros it was P3-500 nits. BenQ's M-Book recipe asks for the same thing.
+- Use the **Apple Display (P3-600 nits)** preset rather than the default "Apple XDR Display (P3-1600 nits)". That's what it's called on the M4; M1/M2 Pros had P3-500 nits instead. BenQ's M-Book recipe asks for the same thing.
 - Match brightness first, then compare whites.
 
 My MacBook is a 14-inch MacBook Pro with the M4 chip (2024), and a few things about it matter here:
 
 - **Its factory profile has a D65 white** (x 0.3127, y 0.3290), measured for this particular panel. That's the target the Dell's Custom Color profile and gains aim for.
 - **Its colour range is close to Display P3; the Dell's isn't.** The MacBook's green primary sits at about y 0.67, the Dell's at 0.61. Very saturated greens and cyans will always look a bit flatter on the Dell, and no setting fixes that.
-- **The backlights differ.** DSCC's Ross Young reported in November 2024 that the M4 MacBook Pros switched to a quantum-dot film, where the Dell uses KSF phosphor. Apple hasn't confirmed it. Two whites that measure the same can still look slightly different side by side when the light behind them has a different spectrum, so expect a small leftover difference even when the numbers agree.
+- **The backlights differ.** The M4 uses a quantum-dot film (first reported by DSCC's Ross Young in November 2024); the Dell uses KSF phosphor. Two whites that measure the same can still look slightly different side by side when the light behind them has a different spectrum, so expect a small leftover difference even when the numbers agree.
 - **SDR brightness goes past 600 nits only with auto-brightness on.** Apple quotes up to 1000 nits outdoors. Notebookcheck measured an M4 Pro 14 at 638 nits by hand and 1,070 with the light sensor in bright light. The Dell tops out around 350, so brightness following simply hits 100 when the MacBook is that bright.
-- **True Tone can reach the Dell.** Apple says True Tone on a Mac laptop with the lid open can adjust external displays up to 32 inches. If the Dell's page in System Settings → Displays shows a True Tone switch, turn it off for colour work, or the Mac will shift the Dell's white too.
+- **True Tone reaches the Dell** while the MacBook's lid is open, so it has to be off for colour work or the Mac shifts the Dell's white too. I keep it off anyway.
 
 ## How it's put together
 
