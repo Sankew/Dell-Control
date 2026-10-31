@@ -1,0 +1,4 @@
+build/
+.DS_Store
+# Dell's own sRGB profile is theirs to distribute, not mine. Get it from Dell's macOS driver package.
+Profiles/Dell S2725QC sRGB (Dell official).icc

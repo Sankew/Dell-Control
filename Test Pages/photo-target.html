@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Photo Target</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
+  .grid { display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(2, 1fr); height: 100vh; gap: 6px; padding: 6px; box-sizing: border-box; }
+  .p { position: relative; }
+  .p span { position: absolute; top: 4px; left: 6px; font: 11px -apple-system, system-ui, sans-serif; color: #888; mix-blend-mode: difference; }
+</style>
+</head>
+<body>
+<!-- Big uniform patches so a RAW photo of both screens can be sampled cleanly.
+     Order matters: the analysis expects this exact layout on both screens. -->
+<div class="grid" id="g"></div>
+<script>
+  const patches = [
+    ['100%', 'rgb(255,255,255)'], ['75%', 'rgb(191,191,191)'], ['50%', 'rgb(128,128,128)'], ['25%', 'rgb(64,64,64)'],
+    ['red', 'rgb(255,0,0)'], ['green', 'rgb(0,255,0)'], ['blue', 'rgb(0,0,255)'], ['10%', 'rgb(26,26,26)'],
+  ];
+  const g = document.getElementById('g');
+  for (const [name, c] of patches) {
+    const d = document.createElement('div');
+    d.className = 'p';
+    d.style.background = c;
+    d.innerHTML = `<span>${name}</span>`;
+    g.appendChild(d);
+  }
+</script>
+</body>
+</html>

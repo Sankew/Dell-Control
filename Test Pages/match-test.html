@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Screen Match Test</title>
+<style>
+  :root { --bg: #808080; --fg: #000; }
+  body { margin: 0; padding: 16px; background: var(--bg); color: var(--fg); font: 13px -apple-system, system-ui, sans-serif; }
+  h2 { font-size: 13px; margin: 18px 0 6px; font-weight: 600; }
+  p { margin: 4px 0; max-width: 70ch; }
+  .row { display: flex; flex-wrap: wrap; gap: 4px; }
+  .sw { width: 64px; height: 64px; display: flex; align-items: flex-end; justify-content: center; font-size: 10px; padding-bottom: 2px; box-sizing: border-box; }
+  .wide { width: 132px; }
+  .ramp { display: flex; height: 48px; }
+  .ramp div { flex: 1; }
+  .black { background: #000; padding: 12px; display: inline-flex; gap: 0; }
+  .black div { width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; color: #555; font-size: 10px; }
+  .pair { display: inline-flex; flex-direction: column; gap: 2px; margin-right: 6px; }
+  .pair span { font-size: 10px; text-align: center; }
+  .white { height: 90px; background: #fff; color: #000; display: flex; align-items: center; justify-content: center; }
+</style>
+</head>
+<body>
+<p><b>How to use:</b> open the MacBook lid, open this file on both screens (or drag the window across), and set both to similar brightness by matching the white bar. Then compare each section. Colours are drawn with CSS colour management, so each screen shows them through its own macOS display profile.</p>
+
+<h2>1 · White point (should look the same white, neither bluer nor greener)</h2>
+<div class="white">#FFFFFF</div>
+
+<h2>2 · Shadow steps on black (count how many squares you can see; both screens should agree)</h2>
+<div class="black" id="black"></div>
+
+<h2>3 · Grey ramp (should be neutral with no tint, and even steps)</h2>
+<div class="ramp" id="ramp"></div>
+
+<h2>4 · ColorChecker-style patches (sRGB)</h2>
+<div class="row" id="checker"></div>
+
+<h2>5 · Skin tones (sRGB)</h2>
+<div class="row" id="skin"></div>
+
+<h2>6 · Saturated colours: sRGB vs Display P3 (top = sRGB limit, bottom = P3 limit; the Dell only reaches ~82% of P3, so its bottom row will look slightly less vivid than the MacBook's)</h2>
+<div class="row" id="sat"></div>
+
+<script>
+  const black = document.getElementById('black');
+  for (const v of [0, 1, 2, 3, 4, 5, 6, 8, 10, 12, 15, 20]) {
+    const d = document.createElement('div');
+    const c = Math.round(v / 100 * 255);
+    d.style.background = `rgb(${c},${c},${c})`;
+    d.textContent = v + '%';
+    black.appendChild(d);
+  }
+  const ramp = document.getElementById('ramp');
+  for (let i = 0; i <= 20; i++) {
+    const d = document.createElement('div');
+    const c = Math.round(i / 20 * 255);
+    d.style.background = `rgb(${c},${c},${c})`;
+    ramp.appendChild(d);
+  }
+  const checker = [[115,82,68,'dark skin'],[194,150,130,'light skin'],[98,122,157,'blue sky'],[87,108,67,'foliage'],[133,128,177,'blue flower'],[103,189,170,'bluish green'],[214,126,44,'orange'],[80,91,166,'purplish blue'],[193,90,99,'moderate red'],[94,60,108,'purple'],[157,188,64,'yellow green'],[224,163,46,'orange yellow'],[56,61,150,'blue'],[70,148,73,'green'],[175,54,60,'red'],[231,199,31,'yellow'],[187,86,149,'magenta'],[8,133,161,'cyan']];
+  const host = document.getElementById('checker');
+  for (const [r,g,b,n] of checker) {
+    const d = document.createElement('div');
+    d.className = 'sw';
+    d.style.background = `rgb(${r},${g},${b})`;
+    d.style.color = (r + g + b) > 380 ? '#000' : '#fff';
+    d.textContent = n;
+    host.appendChild(d);
+  }
+  const skin = [[255,224,196],[241,194,167],[224,172,139],[198,134,103],[161,102,72],[120,76,52],[88,55,38]];
+  const sk = document.getElementById('skin');
+  for (const [r,g,b] of skin) {
+    const d = document.createElement('div');
+    d.className = 'sw wide';
+    d.style.background = `rgb(${r},${g},${b})`;
+    sk.appendChild(d);
+  }
+  const sat = document.getElementById('sat');
+  for (const [n, rgb] of [['red',[1,0,0]],['green',[0,1,0]],['blue',[0,0,1]],['yellow',[1,1,0]],['cyan',[0,1,1]],['magenta',[1,0,1]],['orange',[1,0.5,0]]]) {
+    const p = document.createElement('div');
+    p.className = 'pair';
+    const a = document.createElement('div'); a.className = 'sw';
+    a.style.background = `color(srgb ${rgb.join(' ')})`;
+    const b = document.createElement('div'); b.className = 'sw';
+    b.style.background = `color(display-p3 ${rgb.join(' ')})`;
+    const l = document.createElement('span'); l.textContent = n;
+    p.append(a, b, l);
+    sat.appendChild(p);
+  }
+</script>
+</body>
+</html>
