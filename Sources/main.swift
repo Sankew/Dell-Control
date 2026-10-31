@@ -17,6 +17,8 @@ case "set":
     print(ok ? "ok" : "write failed"); exit(ok ? 0 : 1)
 case "caps":
     print(await DDC().capabilities())
+case "pattern":
+    TestPattern.run(flat: args.dropFirst().first == "flat", dark: args.dropFirst().first == "shadows")
 case "selftest":
     // The classic MCCS example: "get brightness" is 51 82 01 10 AC on the wire after the 6E address.
     precondition(DDC.packet([0x01, 0x10]) == [0x82, 0x01, 0x10, 0xAC])
@@ -34,5 +36,5 @@ case "selftest":
 case nil:
     DellControlApp.main()
 default:
-    print("usage: DellControl [get <vcp>... | set <vcp> <value> | caps | selftest]"); exit(2)
+    print("usage: DellControl [get <vcp>... | set <vcp> <value> | caps | pattern | selftest]"); exit(2)
 }

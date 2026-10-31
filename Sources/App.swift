@@ -200,6 +200,13 @@ struct SettingsView: View {
                     // Once turned off in System Settings, macOS needs the user to approve it there again.
                     if SMAppService.mainApp.status == .requiresApproval { SMAppService.openSystemSettingsLoginItems() }
                 }))
+                Button("Show Test Pattern") {
+                    // Same binary in pattern mode: fills both screens until any key or click.
+                    let p = Process()
+                    p.executableURL = Bundle.main.executableURL
+                    p.arguments = ["pattern"]
+                    try? p.run()
+                }
                 HStack {
                     Button("Read Values from Monitor") { Task { await m.refresh() } }
                     Spacer()

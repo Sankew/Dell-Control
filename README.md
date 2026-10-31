@@ -21,6 +21,7 @@ Not affiliated with Dell. It uses three private Apple APIs (listed below), so a 
   $DC get 10 62        # brightness and volume
   $DC set 10 40        # brightness to 40
   $DC caps             # the monitor's capabilities string
+  $DC pattern          # test patches on every screen; also: pattern flat, pattern shadows
   $DC selftest         # packet, parser and brightness-curve checks
   ```
 
@@ -73,7 +74,7 @@ Only Custom Color is confirmed against the Dell's menu.
 
 **The panel.** The S2725QS uses an LG Display LM270WR3-SSH1. DisplaySpecifications lists the S2725QC as a BOE MV270QUM-NY0-A940, but I couldn't confirm that, and neither macOS nor the monitor says which one it has. It's an edge-lit IPS with KSF red phosphor, about 20% wider than sRGB and well short of Display P3. Its EDID primaries cover roughly 84% of P3.
 
-**Out of the box it runs warm.** RTINGS found "most grays have too much red" and noted it looks warm beside a MacBook; my own photo comparison agreed. Their calibrated gains are paywalled. PCMonitors' settings, quoted by SetupScore, are Custom Color with **R98 G100 B97** at about 56% brightness for roughly 6500 K. That's what mine is set to now. Units vary, so treat those numbers as a starting point.
+**Out of the box it runs warm.** RTINGS found "most grays have too much red" and noted it looks warm beside a MacBook; my own photo comparison agreed. Their calibrated gains are paywalled. PCMonitors' settings, quoted by SetupScore, are Custom Color with **R98 G100 B97** at about 56% brightness for roughly 6500 K. On my unit that measured too cool next to the MacBook, and the camera match below landed on **R100 G96 B85**. Units vary, so treat any of these numbers as a starting point.
 
 ## Matching a MacBook Pro
 
@@ -91,6 +92,39 @@ My MacBook is a 14-inch MacBook Pro with the M4 chip (2024), and a few things ab
 - **SDR brightness goes past 600 nits only with auto-brightness on.** Apple quotes up to 1000 nits outdoors. Notebookcheck measured an M4 Pro 14 at 638 nits by hand and 1,070 with the light sensor in bright light. The Dell tops out around 350, so brightness following simply hits 100 when the MacBook is that bright.
 - **True Tone reaches the Dell** while the MacBook's lid is open, so it has to be off for colour work or the Mac shifts the Dell's white too. I keep it off anyway.
 
+## Calibrating with a camera
+
+No colorimeter, so I used a Sony A6700 on a tripod, tethered over USB, with the MacBook as the reference. Its factory profile is measured for its own panel, with a D65 white. Both screens show the same patches in one frame, so whatever the camera does to colour, it does to both.
+
+```bash
+DC=~/Applications/"Dell Control.app"/Contents/MacOS/DellControl
+swiftc -swift-version 5 Tools/sony-remote.swift -o build/sony-remote
+swiftc -swift-version 5 Tools/analyze-photo.swift -o build/analyze-photo
+
+build/sony-remote set D21E 400 4                 # ISO 400
+build/sony-remote set 5007 400 2                 # f/4
+build/sony-remote set D20D $(( (1<<16) | 25 )) 4 # 1/25 s
+build/sony-remote set D222 17 2                  # save to the Mac as well as the card
+$DC pattern flat &  ; build/sony-remote shoot Captures ; pkill -f "DellControl pattern"
+$DC pattern &       ; build/sony-remote shoot Captures ; pkill -f "DellControl pattern"
+FLAT=Captures/<flat>.ARW build/analyze-photo Captures/<pattern>.ARW "dell:TL TR BR BL" "mac:TL TR BR BL" boxes.png
+```
+
+`sony-remote` speaks Sony's PC Remote protocol through Apple's ImageCaptureCore, so nothing else needs installing. The camera has to be in PC Remote mode over USB. The flat shot matters a lot: without it, lens vignetting and the viewing angle made both screens look like gamma 1.5 at 85%.
+
+What it found on my unit, at Dell brightness 8 in a dark room:
+
+| | Before (R98 G100 B97) | After (**R100 G96 B85**) |
+|---|---|---|
+| White, red÷green vs MacBook | 0.84 | 1.01 |
+| White, blue÷green vs MacBook | 1.19 | 1.01 |
+| Grey brightness 85–40%, vs MacBook | within 2% | within 1% |
+| Grey tint 85–25%, red÷green | within 6% | within 5% (55% grey is the worst) |
+
+The gains act steeply. The Dell's light changes with roughly the 2.6th power of a gain, so one or two steps is a visible change.
+
+A camera doesn't see colour the way eyes do, and these two screens make light differently (quantum dots against KSF phosphor). I only trusted the white because the camera agreed with my own eyes at two settings on either side of it. Shadows below about 20% aren't measured: the room wasn't dark enough at long exposures, and the Dell seems to dim its backlight when the whole screen is dark.
+
 ## How it's put together
 
 | File | Job |
@@ -101,6 +135,7 @@ My MacBook is a 14-inch MacBook Pro with the M4 chip (2024), and a few things ab
 | `Sources/Displays.swift` | Finds the Dell and the built-in screen, reads and sets MacBook brightness (`DisplayServices`, private), assigns ICC profiles (ColorSync). |
 | `Sources/App.swift` | The menu bar panel and Settings window, in SwiftUI. |
 | `Sources/main.swift` | The command line and the self-test; launches the app when run with no arguments. |
+| `Tools/sony-remote.swift`, `Tools/analyze-photo.swift` | Tethered Sony capture and the two-screen photo analysis (see above). `Tools/camera-capture.swift` is the plain ImageCaptureCore version, which can't fire a Sony's shutter. |
 | `Tools/make-icon.swift` | Draws the icon. `swift Tools/make-icon.swift` rebuilds `Resources/AppIcon.icns`. |
 | `Test Pages/` | `match-test.html` for comparing the two screens by eye, `photo-target.html` for photographing both screens side by side. |
 
