@@ -149,7 +149,6 @@ struct SettingsView: View {
     var body: some View {
         Form {
             if !m.connected { Section { NotAnswering() } }
-            if let step = follow.calibrationStep { CalibrationSection(step: step) }
             Section("Picture") {
                 LevelRow(name: "Brightness", icon: "sun.max.fill", code: Monitor.brightness)
                 LevelRow(name: "Contrast", icon: "circle.lefthalf.filled", code: Monitor.contrast)
@@ -219,26 +218,6 @@ struct SettingsView: View {
         .navigationTitle("DELL S2725QC")
         .task { await m.refresh() }
         .onDisappear { if follow.calibrationStep != nil { follow.endCalibration() } }  // never leave the MacBook at a test level
-    }
-}
-
-struct CalibrationSection: View {
-    let step: Int
-    private let follow = BrightnessFollow.shared
-
-    var body: some View {
-        Section {
-            Text("Your MacBook is set to \(Int(BrightnessFollow.calibrationLevels[step] * 100))%. Drag the slider until the Dell's white looks as bright as the MacBook's.")
-            LevelRow(name: "Dell brightness", icon: "sun.max.fill", code: Monitor.brightness)
-            HStack {
-                Button("Cancel", role: .cancel) { follow.endCalibration() }
-                Spacer()
-                Button(step + 1 < BrightnessFollow.calibrationLevels.count ? "Next" : "Finish") { follow.nextCalibrationStep() }
-                    .keyboardShortcut(.defaultAction)
-            }
-        } header: {
-            Text("Match Brightness: step \(step + 1) of \(BrightnessFollow.calibrationLevels.count)")
-        }
     }
 }
 

@@ -53,6 +53,7 @@ final class BrightnessFollow {
         macBeforeCalibration = Displays.macBrightness
         pendingPoints = []
         show(step: 0)
+        CalibrationOverlay.show()
     }
 
     func nextCalibrationStep() {
@@ -68,6 +69,7 @@ final class BrightnessFollow {
 
     func endCalibration() {
         calibrationStep = nil
+        CalibrationOverlay.hide()
         if let macBeforeCalibration { Displays.setMacBrightness(macBeforeCalibration) }
     }
 
