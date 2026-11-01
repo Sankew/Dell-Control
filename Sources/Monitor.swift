@@ -11,15 +11,21 @@ final class Monitor {
     static let preset: UInt8 = 0x14, red: UInt8 = 0x16, green: UInt8 = 0x18, blue: UInt8 = 0x1A
     static let customColor = 12  // 0x14 = 0x0C is the Dell's "Custom Color" mode, the only one that applies RGB gains
     static let presets: [(Int, String)] = [(5, "Standard (6500K)"), (1, "sRGB"), (8, "9300K"), (11, "User 1"), (12, "Custom Color")]
+    /// Profiles bundled in the app, by tone curve: matched to the MacBook, then steeper ones that hide the IPS panel's raised blacks.
+    static let toneCurves = [("Accurate", "Dell S2725QC Custom Color D65 G2.2"), ("More", "Dell S2725QC Custom Color D65 E2.3"),
+                             ("Most", "Dell S2725QC Custom Color D65 E2.4")]
 
     let ddc = DDC()
     private(set) var value: [UInt8: Int] = [:]
     private(set) var maxValue: [UInt8: Int] = [:]
     private(set) var connected = true
+    var toneCurve = UserDefaults.standard.integer(forKey: "toneCurve") {
+        didSet { UserDefaults.standard.set(toneCurve, forKey: "toneCurve"); profiled = nil; matchProfile() }
+    }
     @ObservationIgnored private var unsent: [UInt8: Int] = [:]
     @ObservationIgnored private var writer: Task<Void, Never>?
     @ObservationIgnored private var writing: Set<UInt8> = []
-    @ObservationIgnored private var profiledPreset: Int?
+    @ObservationIgnored private var profiled: (preset: Int, curve: Int)?
 
     func refresh(_ codes: [UInt8] = [brightness, volume, contrast, sharpness, preset, red, green, blue]) async {
         var any = false
@@ -77,9 +83,10 @@ final class Monitor {
     /// Gives macOS the colour profile that describes the Dell's current mode, the way BenQ's "M-Book" mode pairs one.
     /// sRGB mode clamps the panel to sRGB; every other mode shows the native, wider gamut.
     private func matchProfile() {
-        guard let p = value[Self.preset], p != profiledPreset else { return }
-        let name = p == 1 ? "Dell S2725QC sRGB (Dell official).icc" : "Dell S2725QC Custom Color D65 G2.2.icc"
-        let url = URL.homeDirectory.appending(path: "Library/ColorSync/Profiles/\(name)")
-        if Displays.assignProfile(url) { profiledPreset = p }
+        guard let p = value[Self.preset], profiled.map({ $0 != (p, toneCurve) }) ?? true else { return }
+        let curve = Self.toneCurves[min(max(toneCurve, 0), Self.toneCurves.count - 1)].1
+        let url = p == 1 ? URL.homeDirectory.appending(path: "Library/ColorSync/Profiles/Dell S2725QC sRGB (Dell official).icc")
+                         : Bundle.main.url(forResource: curve, withExtension: "icc")
+        if let url, Displays.assignProfile(url) { profiled = (p, toneCurve) }
     }
 }

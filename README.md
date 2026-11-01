@@ -12,7 +12,8 @@ Not affiliated with Dell. It uses three private Apple APIs (listed below), so a 
 
 - **Menu bar panel** in the style of Control Center: a Display card with brightness, a Sound card with volume, and a button into the full settings.
 - **Settings window** with everything else: contrast, sharpness, colour mode, red/green/blue gains (in Custom Color only), follow-MacBook brightness, open at login.
-- **Automatic colour profile.** Change the Dell's colour mode, from the app or the joystick, and within ten seconds macOS gets the ICC profile that describes that mode. sRGB mode gets Dell's sRGB profile; every other mode gets the native-gamut profile in [`Profiles/`](Profiles). This is the same trick BenQ's "M-Book" mode and ASUS's "M Model P3" rely on: the monitor's mode and the Mac's profile have to agree, or colours come out over- or under-saturated.
+- **Automatic colour profile.** Change the Dell's colour mode, from the app or the joystick, and within ten seconds macOS gets the ICC profile that describes that mode. sRGB mode gets Dell's sRGB profile; every other mode gets the native-gamut profile in [`Profiles/`](Profiles), which is bundled into the app. This is the same trick BenQ's "M-Book" mode and ASUS's "M Model P3" rely on: the monitor's mode and the Mac's profile have to agree, or colours come out over- or under-saturated.
+- **Contrast: Accurate, More or Most.** An IPS panel's black is a glowing grey next to a mini-LED MacBook, and a matte coating spreads room light over it, so greys can look flat even when they measure right. More and Most use profiles that declare a lower panel gamma (2.10 and 2.02), so macOS renders everything on a steeper curve, effectively gamma 2.3 and 2.4. Shadows and mid-tones sit lower and the picture gets more depth. It's the same idea as the gamma 2.4 standard for dim-room viewing. Accurate is the one matched to the MacBook.
 - **Follow MacBook brightness.** The Dell follows the built-in screen as macOS dims and brightens it, auto-brightness included. "Match Brightness by Eye" sets the MacBook to 25, 50, 75 and 100%, and at each step you drag the Dell until the whites look equally bright. If you nudge the Dell by hand afterwards, that nudge is kept as an offset.
 - **Command line**, mostly so scripts (and Claude) can test things without clicking:
 
@@ -35,10 +36,7 @@ Needs an Apple silicon Mac, macOS 15 or later (I run 27.2), and the Command Line
 
 That compiles in Swift 6 language mode, signs ad hoc, runs the self-test and copies the app to `~/Applications`. In the Dell's menu, **Others → DDC/CI** must be on.
 
-For the automatic profiles, put two files in `~/Library/ColorSync/Profiles`:
-
-- `Dell S2725QC Custom Color D65 G2.2.icc` from [`Profiles/`](Profiles).
-- `Dell S2725QC sRGB (Dell official).icc`: Dell's `Dell_S2725QC_sRGB.icm` from their macOS driver package, renamed. It's Dell's file, so it isn't in this repo.
+The Custom Color profiles in [`Profiles/`](Profiles) are copied into the app when it builds. For the Dell's sRGB mode, put `Dell S2725QC sRGB (Dell official).icc` in `~/Library/ColorSync/Profiles`: that's Dell's `Dell_S2725QC_sRGB.icm` from their macOS driver package, renamed. It's Dell's file, so it isn't in this repo.
 
 Copy them with Terminal or Finder. Files written by some sandboxed tools pick up a `com.apple.provenance` tag, and System Settings then hides them from its profile list (ColorSync still uses them).
 

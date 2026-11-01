@@ -4,7 +4,7 @@ set -euo pipefail
 cd "${0:A:h}"
 app="build/Dell Control.app"
 rm -rf "$app"; mkdir -p "$app/Contents/MacOS" "$app/Contents/Resources"
-cp Resources/AppIcon.icns "$app/Contents/Resources/"
+cp Resources/AppIcon.icns Profiles/"Dell S2725QC Custom Color"*.icc "$app/Contents/Resources/"
 swiftc -O -swift-version 6 -default-isolation MainActor -enable-upcoming-feature NonisolatedNonsendingByDefault -target arm64-apple-macos15 Sources/*.swift -o "$app/Contents/MacOS/DellControl" 2>&1 | grep -v '^.*warning' || true
 [[ -x "$app/Contents/MacOS/DellControl" ]] || { echo "build failed"; exit 1; }
 cat > "$app/Contents/Info.plist" <<'EOF'

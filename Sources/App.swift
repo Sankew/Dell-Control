@@ -180,6 +180,12 @@ struct SettingsView: View {
                 Picker("Colour mode", selection: Binding(get: { m.value[Monitor.preset] ?? 0 }, set: { m.setPreset($0) })) {
                     ForEach(Monitor.presets, id: \.0) { Text($0.1).tag($0.0) }
                 }
+                Picker("Contrast", selection: Binding(get: { m.toneCurve }, set: { m.toneCurve = $0 })) {
+                    Text("Accurate (matches MacBook)").tag(0)
+                    Text("More (gamma 2.3)").tag(1)
+                    Text("Most (gamma 2.4)").tag(2)
+                }
+                .disabled(m.value[Monitor.preset] == 1)
                 if m.value[Monitor.preset] == Monitor.customColor {
                     LevelRow(name: "Red", icon: "circle.fill", code: Monitor.red, tint: .red)
                     LevelRow(name: "Green", icon: "circle.fill", code: Monitor.green, tint: .green)
@@ -188,9 +194,8 @@ struct SettingsView: View {
             } header: {
                 Text("Colour")
             } footer: {
-                Text(m.value[Monitor.preset] == Monitor.customColor
-                     ? "macOS uses the matching colour profile for each mode automatically."
-                     : "Choose Custom Color to adjust the red, green and blue gains. macOS uses the matching colour profile for each mode automatically.")
+                Text((m.value[Monitor.preset] == Monitor.customColor ? "" : "Choose Custom Color to adjust the red, green and blue gains. ")
+                     + "More and Most deepen shadows and mid-tones to make up for the IPS panel's grey blacks; Accurate matches the MacBook. macOS uses the matching colour profile for each mode automatically.")
                     .foregroundStyle(.secondary)
             }
             Section("General") {
