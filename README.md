@@ -148,3 +148,7 @@ The Command Line Tools ship without SwiftUI's macro plugin, so `@State` won't co
 - **HDR toggle.** macOS currently reports the Dell as not supporting HDR in its 4K 120 Hz mode, so I haven't wired it up. Dell's manual also says brightness, contrast and the preset modes lock while it shows HDR content, so the app's writes would be ignored then anyway.
 - **Brightness following** is untested with the lid open.
 - The colour-mode names marked with a question mark above.
+
+## Licence
+
+MIT, see [LICENSE](LICENSE). The private Apple APIs and Dell's own ICC profile are not covered by it.
