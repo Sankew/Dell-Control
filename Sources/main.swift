@@ -18,7 +18,8 @@ case "set":
 case "caps":
     print(await DDC().capabilities())
 case "pattern":
-    TestPattern.run(flat: args.dropFirst().first == "flat", dark: args.dropFirst().first == "shadows")
+    let mode = args.dropFirst().first
+    TestPattern.run(flat: mode == "flat", dark: mode == "shadows", gradient: mode == "gradient")
 case "selftest":
     // The classic MCCS example: "get brightness" is 51 82 01 10 AC on the wire after the 6E address.
     precondition(DDC.packet([0x01, 0x10]) == [0x82, 0x01, 0x10, 0xAC])

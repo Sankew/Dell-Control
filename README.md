@@ -13,6 +13,7 @@ Not affiliated with Dell. It uses three private Apple APIs (listed below), so a 
 - **Menu bar panel** in the style of Control Center: a Display card with brightness, a Sound card with volume, and a button into the full settings.
 - **Settings window** with everything else: contrast, sharpness, colour mode, red/green/blue gains (in Custom Color only), follow-MacBook brightness, open at login.
 - **Automatic colour profile.** Change the Dell's colour mode, from the app or the joystick, and within ten seconds macOS gets the ICC profile that describes that mode. sRGB mode gets Dell's sRGB profile; every other mode gets the native-gamut profile in [`Profiles/`](Profiles), which is bundled into the app. This is the same trick BenQ's "M-Book" mode and ASUS's "M Model P3" rely on: the monitor's mode and the Mac's profile have to agree, or colours come out over- or under-saturated.
+- **White balance on the GPU, not in the monitor.** The Dell's gains stay at 100/100/100. Lowering a gain inside the monitor throws away levels without dithering, which showed up as blotchy banding in dark areas and around white text. Instead the profiles carry a `vcgt` calibration curve (red 0.977, green 0.953, blue 0.849, the equivalent of gains R98 G96 B87). macOS loads it into the GPU, which applies it at high precision and dithers. `python3 Tools/make-profiles.py R G B` rebuilds all three profiles for a different white.
 - **Contrast: Accurate, More or Most.** An IPS panel's black is a glowing grey next to a mini-LED MacBook, and a matte coating spreads room light over it, so greys can look flat even when they measure right. More and Most use profiles that declare a lower panel gamma (2.10 and 2.02), so macOS renders everything on a steeper curve, effectively gamma 2.3 and 2.4. Shadows and mid-tones sit lower and the picture gets more depth. It's the same idea as the gamma 2.4 standard for dim-room viewing. Accurate is the one matched to the MacBook. I use Most: next to the MacBook it looks closest, even though Accurate measures closer.
 - **Follow MacBook brightness.** The Dell follows the built-in screen as macOS dims and brightens it, auto-brightness included. "Match Brightness by Eye" sets the MacBook to 25, 50, 75 and 100%, and at each step you drag the Dell until the whites look equally bright. If you nudge the Dell by hand afterwards, that nudge is kept as an offset.
 - **Command line**, mostly so scripts (and Claude) can test things without clicking:
@@ -22,7 +23,7 @@ Not affiliated with Dell. It uses three private Apple APIs (listed below), so a 
   $DC get 10 62        # brightness and volume
   $DC set 10 40        # brightness to 40
   $DC caps             # the monitor's capabilities string
-  $DC pattern          # test patches on every screen; also: pattern flat, pattern shadows
+  $DC pattern          # test patches on every screen; also: pattern flat, pattern shadows, pattern gradient
   $DC selftest         # packet, parser and brightness-curve checks
   ```
 
@@ -65,6 +66,8 @@ Useful codes: `10` brightness, `12` contrast, `14` colour preset, `16/18/1A` red
 | `0C` | `14` | Custom Color (confirmed) |
 
 Only Custom Color is confirmed against the Dell's menu.
+
+**Signal.** Over USB-C the Mac runs DisplayPort HBR3 on all four lanes, about 25.9 Gbit/s of picture bandwidth, so the Dell's USB ports drop to USB 2.0 speed. 4K at 120 Hz with its blanking is about 1.07 billion pixels a second: 25.6 Gbit/s at 8 bits per colour, which just fits uncompressed, or 32 Gbit/s at 10 bits, which needs DSC compression. The Dell accepts RGB at 8 and 10 bits and YCbCr 4:2:2 and 4:2:0. macOS ranks 10-bit RGB highest and allows compression, but doesn't say which format it picked.
 
 **Timing.** The Dell silently drops a command that arrives less than about 50 ms after a write, and still answers "ok". `DDC.write` waits 60 ms after every write for that reason.
 
@@ -119,7 +122,7 @@ What it found on my unit, at Dell brightness 8 in a dark room:
 | Grey brightness 85–40%, vs MacBook | within 2% | within 1% |
 | Grey tint 85–25%, red÷green | within 6% | within 5% (55% grey is the worst) |
 
-The gains act steeply. The Dell's light changes with roughly the 2.6th power of a gain, so one or two steps is a visible change.
+The gains act steeply. The Dell's light changes with roughly the 2.6th power of a gain, so one or two steps is a visible change. I later nudged the white by eye to R98 G96 B87, then moved it out of the monitor and into the profiles' GPU curve, so the gains are back at 100 (see above).
 
 A camera doesn't see colour the way eyes do, and these two screens make light differently (quantum dots against KSF phosphor). I only trusted the white because the camera agreed with my own eyes at two settings on either side of it. Shadows below about 20% aren't measured: the room wasn't dark enough at long exposures, and the Dell seems to dim its backlight when the whole screen is dark.
 

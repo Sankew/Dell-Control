@@ -194,7 +194,9 @@ struct SettingsView: View {
             } header: {
                 Text("Colour")
             } footer: {
-                Text((m.value[Monitor.preset] == Monitor.customColor ? "" : "Choose Custom Color to adjust the red, green and blue gains. ")
+                Text((m.value[Monitor.preset] == Monitor.customColor
+                      ? "Keep the gains at 100: white balance is applied by the Mac's GPU from the colour profile, and lowering a gain in the monitor causes banding. "
+                      : "Choose Custom Color to adjust the red, green and blue gains. ")
                      + "More and Most deepen shadows and mid-tones to make up for the IPS panel's grey blacks; Accurate matches the MacBook. macOS uses the matching colour profile for each mode automatically.")
                     .foregroundStyle(.secondary)
             }
@@ -204,12 +206,9 @@ struct SettingsView: View {
                     // Once turned off in System Settings, macOS needs the user to approve it there again.
                     if SMAppService.mainApp.status == .requiresApproval { SMAppService.openSystemSettingsLoginItems() }
                 }))
-                Button("Show Test Pattern") {
-                    // Same binary in pattern mode: fills both screens until any key or click.
-                    let p = Process()
-                    p.executableURL = Bundle.main.executableURL
-                    p.arguments = ["pattern"]
-                    try? p.run()
+                HStack {
+                    Button("Show Test Pattern") { showPattern() }
+                    Button("Show Gradient Test") { showPattern("gradient") }
                 }
                 HStack {
                     Button("Read Values from Monitor") { Task { await m.refresh() } }
@@ -224,6 +223,14 @@ struct SettingsView: View {
         .task { await m.refresh() }
         .onDisappear { if follow.calibrationStep != nil { follow.endCalibration() } }  // never leave the MacBook at a test level
     }
+}
+
+/// Same binary in pattern mode: fills every screen until any key or click.
+private func showPattern(_ mode: String? = nil) {
+    let p = Process()
+    p.executableURL = Bundle.main.executableURL
+    p.arguments = ["pattern"] + (mode.map { [$0] } ?? [])
+    try? p.run()
 }
 
 struct LevelRow: View {
